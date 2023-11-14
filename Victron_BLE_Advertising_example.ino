@@ -1,0 +1,72 @@
+/*
+  Initial BLE code adapted from Examples->BLE->Beacon_Scanner.
+  Victron decryption code snippets from https://github.com/Fabian-Schmidt/esphome-victron_ble
+*/
+
+//#include <Arduino.h>
+
+#include <BLEDevice.h>
+#include <BLEScan.h>
+#include <BLEAdvertisedDevice.h>
+
+#include <aes/esp_aes.h>        // 
+
+
+BLEScan *pBLEScan;
+
+// Here's a key for a SmartSolar as obtained from the Victron app:
+//
+//   dc73cb155351cf950f9f3a958b5cd96f
+//
+// Reformatted into an array definition useful to our code:
+//
+byte key[16]={
+    0xdc, 0x73, 0xcb, 0x15, 0x53, 0x51, 0xcf, 0x95,
+    0x0f, 0x9f, 0x3a, 0x95, 0x8b, 0x5c, 0xd9, 0x6f
+};
+
+int keyBits=128;  // Number of bits for AES-CTR decrypt.
+int scanTime = 1; // BLE scan time (seconds)
+
+char savedDeviceName[32];   // cached copy of the device name (31 chars max) + \0
+
+// Victron docs on the manufacturer data in advertisement packets can be found at:
+//   https://community.victronenergy.com/storage/attachments/48745-extra-manufacturer-data-2022-12-14.pdf
+//
+
+typedef struct {
+  uint16_t vendorID;          // vendor ID
+  uint8_t beaconType;         // Should be 0x10 (Product Advertisement) for the packets we want
+  uint8_t unknownData1[3];    // Unknown data
+  uint8_t victronRecordType;  // Should be 0x01 (Solar Charger) for the packets we want
+  uint16_t nonceDataCounter;  // Nonce
+  uint8_t encryptKeyMatch;    // Should match pre-shared encryption key byte 0
+  uint8_t victronEncryptedData[21];    // (31 bytes max per BLE spec - size of previous elements)
+  uint8_t nullPad;            // extra byte because toCharArray() adds a \0 byte.
+} __attribute__((packed)) victronManufacturerData;
+
+
+typedef struct {
+   uint8_t deviceState;
+   uint8_t errorCode;
+   int16_t batteryVoltage;
+   int16_t batteryCurrent;
+   uint16_t todayYield;
+   uint16_t inputPower;
+   uint8_t outputCurrentLo;     // Low 8 bits of output current (in 0.1 Amp increments)
+   uint8_t outputCurrentHi;     // High 1 bit of ourput current (must mask off unused bits)
+   uint8_t  unused[4];
+} __attribute__((packed)) victronPanelData;
+
+/* FYI, here are state values. I haven't seen ones with '???' so I don't know
+ * if they exist or not:
+ *  0 = no charge from solar
+ *  1 = ???
+ *  2 = ???
+ *  3 = bulk charge
+ *  4 = absorption charge
+ *  5 = float
+ *  6 = ???
+ *  7 = ???
+ *  maybe others?
+ */

@@ -20,7 +20,7 @@ BLEScan *pBLEScan;
 //
 // Reformatted into an array definition useful to our code:
 //
-byte key[16]={
+uint8_t key[16]={
     0xdc, 0x73, 0xcb, 0x15, 0x53, 0x51, 0xcf, 0x95,
     0x0f, 0x9f, 0x3a, 0x95, 0x8b, 0x5c, 0xd9, 0x6f
 };
@@ -34,18 +34,28 @@ char savedDeviceName[32];   // cached copy of the device name (31 chars max) + \
 //   https://community.victronenergy.com/storage/attachments/48745-extra-manufacturer-data-2022-12-14.pdf
 //
 
+
+// Usage/style note: I use uint16_t in places where I need to force 16-bit unsigned integers
+// instead of whatever the compiler/architecture might decide to use. I might not need to do
+// the same with byte variables, but I'll do it anyway just to be at least a little consistent.
+
+
+// Must use the "packed" attribute to make sure the compiler doesn't add any padding to deal with
+// word alignment.
 typedef struct {
-  uint16_t vendorID;          // vendor ID
-  uint8_t beaconType;         // Should be 0x10 (Product Advertisement) for the packets we want
-  uint8_t unknownData1[3];    // Unknown data
-  uint8_t victronRecordType;  // Should be 0x01 (Solar Charger) for the packets we want
-  uint16_t nonceDataCounter;  // Nonce
-  uint8_t encryptKeyMatch;    // Should match pre-shared encryption key byte 0
-  uint8_t victronEncryptedData[21];    // (31 bytes max per BLE spec - size of previous elements)
-  uint8_t nullPad;            // extra byte because toCharArray() adds a \0 byte.
+  uint16_t vendorID;                    // vendor ID
+  uint8_t beaconType;                   // Should be 0x10 (Product Advertisement) for the packets we want
+  uint8_t unknownData1[3];              // Unknown data
+  uint8_t victronRecordType;            // Should be 0x01 (Solar Charger) for the packets we want
+  uint16_t nonceDataCounter;            // Nonce
+  uint8_t encryptKeyMatch;              // Should match pre-shared encryption key byte 0
+  uint8_t victronEncryptedData[21];     // (31 bytes max per BLE spec - size of previous elements)
+  uint8_t nullPad;                      // extra byte because toCharArray() adds a \0 byte.
 } __attribute__((packed)) victronManufacturerData;
 
 
+// Must use the "packed" attribute to make sure the compiler doesn't add any padding to deal with
+// word alignment.
 typedef struct {
    uint8_t deviceState;
    uint8_t errorCode;
@@ -53,12 +63,12 @@ typedef struct {
    int16_t batteryCurrent;
    uint16_t todayYield;
    uint16_t inputPower;
-   uint8_t outputCurrentLo;     // Low 8 bits of output current (in 0.1 Amp increments)
-   uint8_t outputCurrentHi;     // High 1 bit of ourput current (must mask off unused bits)
-   uint8_t  unused[4];
+   uint8_t outputCurrentLo;             // Low 8 bits of output current (in 0.1 Amp increments)
+   uint8_t outputCurrentHi;             // High 1 bit of ourput current (must mask off unused bits)
+   uint8_t  unused[4];                  // Not currently used by Vistron, but it could be in the future.
 } __attribute__((packed)) victronPanelData;
 
-/* FYI, here are state values. I haven't seen ones with '???' so I don't know
+/* FYI, here are Device State values. I haven't seen ones with '???' so I don't know
  * if they exist or not:
  *  0 = no charge from solar
  *  1 = ???

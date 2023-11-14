@@ -47,8 +47,8 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
           return;
         }
 
-        byte inputData[16];
-        byte outputData[16]={0};  // i don't really need to initialize the output.
+        uint8_t inputData[16];
+        uint8_t outputData[16]={0};  // i don't really need to initialize the output.
 
         // The number of encrypted bytes is given by the number of bytes in the manufacturer
         // data as a while minus the number of bytes (10) in the header part of the data.
@@ -67,9 +67,11 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
           return;
         }
         
-        byte data_counter_lsb=(vicData->nonceDataCounter) & 0xff;
-        byte data_counter_msb=((vicData->nonceDataCounter) >> 8) & 0xff;
+        // construct the 16-byte nonce counter array by piecing it together byte-by-byte.
+        uint8_t data_counter_lsb=(vicData->nonceDataCounter) & 0xff;
+        uint8_t data_counter_msb=((vicData->nonceDataCounter) >> 8) & 0xff;
         u_int8_t nonce_counter[16] = {data_counter_lsb, data_counter_msb, 0};
+        
         u_int8_t stream_block[16] = {0};
 
         size_t nonce_offset=0;
@@ -86,8 +88,8 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
 
         // Getting to these elements is easier using the struct instead of
         // hacking around with outputData[x] references.
-        byte deviceState=victronData->deviceState;
-        byte errorCode=victronData->errorCode;
+        uint8_t deviceState=victronData->deviceState;
+        uint8_t errorCode=victronData->errorCode;
         float batteryVoltage=float(victronData->batteryVoltage)*0.01;
         float batteryCurrent=float(victronData->batteryCurrent)*0.1;
         float todayYield=float(victronData->todayYield)*0.01*1000;
@@ -109,7 +111,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
         // Towards the goal of filtering out this noise, I've found that I've rarely (or never) seen
         // corrupted data when the 'unused' bits of the outputCurrent MSB equal 0xfe. We'll use this
         // as a litmus test here.
-        byte unusedBits=victronData->outputCurrentHi & 0xfe;
+        uint8_t unusedBits=victronData->outputCurrentHi & 0xfe;
         if (unusedBits != 0xfe) {
           return;
         }

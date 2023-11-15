@@ -1,15 +1,13 @@
 /*
   Initial BLE code adapted from Examples->BLE->Beacon_Scanner.
   Victron decryption code snippets from https://github.com/Fabian-Schmidt/esphome-victron_ble
-*/
-
-//#include <Arduino.h>
+*/ 
 
 #include <BLEDevice.h>
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 
-#include <aes/esp_aes.h>        // 
+#include <aes/esp_aes.h>        // AES library for decrypting the Victron manufacturer data.
 
 
 BLEScan *pBLEScan;

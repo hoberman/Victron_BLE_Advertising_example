@@ -16,7 +16,9 @@ void setup()
   Serial.println();
   
   strcpy(savedDeviceName,"(unknown device name)");
-  
+
+  // Code from Examples->BLE->Beacon_Scanner. This sets up a timed scan watching for BLE beacons.
+  // During a scan the receipt of a beacon will trigger a call to MyAdvertisedDeviceCallbacks().
   BLEDevice::init("");
   pBLEScan = BLEDevice::getScan(); //create new scan
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());

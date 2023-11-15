@@ -1,3 +1,6 @@
+// Some understanding of this stuff might be found by digging around in the ESP32 library's
+// file BLEAdvertisedDevice.h
+
 class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
     void onResult(BLEAdvertisedDevice advertisedDevice) {
 

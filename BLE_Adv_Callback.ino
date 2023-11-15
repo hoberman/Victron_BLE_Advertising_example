@@ -54,7 +54,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
         uint8_t outputData[16]={0};  // i don't really need to initialize the output.
 
         // The number of encrypted bytes is given by the number of bytes in the manufacturer
-        // data as a while minus the number of bytes (10) in the header part of the data.
+        // data as a whole minus the number of bytes (10) in the header part of the data.
         int encrDataSize=manDataSize-10;
         for (int i=0; i<encrDataSize; i++) {
           inputData[i]=vicData->victronEncryptedData[i];   // copy for our decrypt below while I figure this out.

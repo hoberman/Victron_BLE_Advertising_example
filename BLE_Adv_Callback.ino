@@ -10,21 +10,33 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
       // See if we have manufacturer data and then look to see if it's coming from a Victron device.
       if (advertisedDevice.haveManufacturerData() == true) {
 
+        // Note: This comment (and maybe some code?) needs to be adjusted so it's not so
+        // specific to String-vs-std:string. I'll leave it as-is for now so you at least
+        // understand why I have an extra byte added to the manCharBuf array.
+        //
         // Here's the thing: BLE specs say our manufacturer data can be a max of 31 bytes.
         // But: The library code puts this data into a String, which we will then copy to
         // a character (i.e., byte) buffer using String.toCharArray(). Assuming we have the
         // full 31 bytes of manufacturer data allowed by the BLE spec, we'll need to size our
         // buffer with an extra byte for a null terminator. Our toCharArray() call will need
         // to specify *32* bytes so it will copy 31 bytes of data with a null terminator
-        // at the end. The real question is WHY does the BLE library code use String???
+        // at the end.
         uint8_t manCharBuf[manDataSizeMax+1];
 
-        String manData = advertisedDevice.getManufacturerData(); // lib code returns String. Ugh.
+        #ifdef USE_String
+          String manData = advertisedDevice.getManufacturerData();      // lib code returns String.
+        #else
+          std::string manData = advertisedDevice.getManufacturerData(); // lib code returns std::string
+        #endif
         int manDataSize=manData.length(); // This does not count the null at the end.
 
         // Copy the data from the String to a byte array. Must have the +1 so we
         // don't lose the last character to the null terminator.
-        manData.toCharArray((char *)manCharBuf,manDataSize+1);
+        #ifdef USE_String
+          manData.toCharArray((char *)manCharBuf,manDataSize+1);
+        #else
+          manData.copy((char *)manCharBuf, manDataSize + 1);
+        #endif
 
         // Now let's setup a pointer to a struct to get to the data more cleanly.
         victronManufacturerData * vicData=(victronManufacturerData *)manCharBuf;
@@ -41,6 +53,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
 
         // Not all packets contain a device name, so if we get one we'll save it and use it from now on.
         if (advertisedDevice.haveName()) {
+          // This works the same whether getName() returns String or std::string.
           strcpy(savedDeviceName,advertisedDevice.getName().c_str());
         }
         

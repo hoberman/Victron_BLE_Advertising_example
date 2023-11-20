@@ -7,6 +7,13 @@
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
 
+// The Espressif people decided to use String instead of std::string in newer versions
+// (3.0 and later?) of their ESP32 libraries. Check your BLEAdvertisedDevice.h file to see
+// if this is the case for getManufacturerData(); if so, then uncomment this line so we'll
+// use String code in the callback.  
+//#define USE_String
+
+
 #include <aes/esp_aes.h>        // AES library for decrypting the Victron manufacturer data.
 
 

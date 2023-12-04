@@ -82,6 +82,6 @@ typedef struct {
  *  4 = absorption charge
  *  5 = float
  *  6 = ???
- *  7 = ???
+ *  7 = equalization
  *  maybe others?
  */

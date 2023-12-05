@@ -12,7 +12,8 @@ Tested with:<br>
 <table>
 	<tr><td>Sparkfun ESP32 Thing</td><td>ESP32-DOWDQ6</td></tr>
 	<tr><td>M5 Stamp S3</td><td>ESP32-S3FN8</td></tr>
-	<tr><td>M5 Stick C</td><td>ESP32-PICO</td></tr>
+	<tr><td>M5 Stick C</td><td>ESP32-PICO</td><td>Integrated TFT display (not used in this example)</td></tr>
+	<tr><td>M5 Stick C Plus</td><td>ESP32-PICO</td><td>Integrated TFT display (not used in this example)</td></tr>
 	<tr><td>Teyleten Robot ESP32S</td><td>ESP32-WROOM-32</td><td>Amazon - three for under $20!</td></tr>
 	<tr><td>Heltec/HiLetGo/MakerFocus ESP32</td><td>ESP32-S3</td><td>Integrated OLED display (not used in this example)</td></tr>
 </table>

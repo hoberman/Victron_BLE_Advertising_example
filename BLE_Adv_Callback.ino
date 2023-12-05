@@ -35,7 +35,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
         #ifdef USE_String
           manData.toCharArray((char *)manCharBuf,manDataSize+1);
         #else
-          manData.copy((char *)manCharBuf, manDataSize + 1);
+          manData.copy((char *)manCharBuf, manDataSize+1);
         #endif
 
         // Now let's setup a pointer to a struct to get to the data more cleanly.
@@ -132,7 +132,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
           return;
         }
 
-        Serial.printf("%-31s  Battery: %6.2f Volts %6.2f Amps  Solar: %6.2f Watts Yield: %6.0f Wh  Load: %6.1f Amps  State: %2d\n",
+        Serial.printf("%-31s  Battery: %6.2f Volts %6.2f Amps  Solar: %6.2f Watts Yield: %6.0f Wh  Load: %6.1f Amps  State: %3d\n",
           savedDeviceName,
           batteryVoltage, batteryCurrent,
           inputPower, todayYield,

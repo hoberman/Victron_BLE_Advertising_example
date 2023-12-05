@@ -19,16 +19,46 @@
 
 BLEScan *pBLEScan;
 
-// Here's a key for a SmartSolar as obtained from the Victron app:
+// The data in the BLE advertising broadcast from the SmartSolar device is encrypted by a 128-bit
+// AES-CTR key. The key is created when you pair your SmartSolar device with the VictronConnect
+// application; it's needed by this code in order to decrypt the BLE broadcast data.
+//
+// To obtain the key for your device, do the following (Apple iOS app; instructions for other
+// platforms may differ):
+//   1) If you haven't already, pair your SmartSolar device with the VictronConnect app.
+//   2) Connect to the SmartSolar device in the application; you should see the device's "STATUS" page.
+//   3) Touch the gear icon at the upper right to get to the "Settings" page.
+//   4) Touch the three-vertical-dot icon at the upper right to get a popup menu; select "Product info".
+//   5) Scroll to the bottom of the Product info page and ensure "Instant readout via Bluetooth" is enabled.
+//   6) Touch the "SHOW" button in the "Encryption data" section; you'll get a popup that shows
+//      the device's MAC address (informational; not used by this code) and the encryption key that
+//      you need.
+//   7) Touching the Encryption Key in the iOS app puts it into your paste buffer. Put it into a comment
+//      in your source by pasting or by typing it manually. If typing it by hand, double-check your work
+//      because this has to be EXACT (although case is unimportant).
+//   8) Convert the hex string into an ESP32/C byte array by splitting it into two-character pairs, adding
+//      commas and '0x' as appropriate, etc.
+//
+// Here's my copy-pasted Victron SmartSolar charge controller encryption key:
 //
 //   dc73cb155351cf950f9f3a958b5cd96f
 //
-// Reformatted into an array definition useful to our code:
+// And then split the key into two-character pairs:
+//
+//   dc 73 cb 15 53 51 cf 95 0f 9f 3a 95 8b 5c d9 6f
+//
+// And finally, reformatted into the array definition needed by this code:
 //
 uint8_t key[16]={
     0xdc, 0x73, 0xcb, 0x15, 0x53, 0x51, 0xcf, 0x95,
     0x0f, 0x9f, 0x3a, 0x95, 0x8b, 0x5c, 0xd9, 0x6f
 };
+
+// Note: In my own (non-demo) code I paste the encryption key into a quoted character string
+// and then use a function I wrote to convert it into the actual byte array. This saves me
+// tedium and risk of mistakes in this reformat step. I didn't do that here so I could keep
+// the code simple, so this is left as an excercise for the reader once you get things working.
+
 
 int keyBits=128;  // Number of bits for AES-CTR decrypt.
 int scanTime = 1; // BLE scan time (seconds)
@@ -73,15 +103,16 @@ typedef struct {
    uint8_t  unused[4];                  // Not currently used by Vistron, but it could be in the future.
 } __attribute__((packed)) victronPanelData;
 
-/* FYI, here are Device State values. I haven't seen ones with '???' so I don't know
- * if they exist or not:
- *  0 = no charge from solar
- *  1 = ???
- *  2 = ???
- *  3 = bulk charge
- *  4 = absorption charge
- *  5 = float
- *  6 = ???
- *  7 = equalization
- *  maybe others?
- */
+// FYI, here are Device State values. I haven't seen ones with '???' so I don't know
+// if they exist or not or what they might mean:
+//   0 = no charge from solar
+//   1 = ???
+//   2 = ???
+//   3 = bulk charge
+//   4 = absorption charge
+//   5 = float
+//   6 = ???
+//   7 = equalization
+// I've also seen a value '245' for about a second when my solar panel (simulated by a
+// benchtop power supply) transitions from off/low voltage to on/higher voltage. There
+// be others, but I haven't seen them.

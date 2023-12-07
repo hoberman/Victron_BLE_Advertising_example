@@ -1,6 +1,15 @@
 /*
   Initial BLE code adapted from Examples->BLE->Beacon_Scanner.
-  Victron decryption code snippets from https://github.com/Fabian-Schmidt/esphome-victron_ble
+  Victron decryption code snippets from:
+  
+    https://github.com/Fabian-Schmidt/esphome-victron_ble
+
+  Information on the "extra manufacturer data" that we're picking up from Victron SmartSolar
+  BLE advertising beacons can be found at:
+  
+    https://community.victronenergy.com/storage/attachments/48745-extra-manufacturer-data-2022-12-14.pdf
+  
+  Thanks, Victron, for providing both the beacon and the documentation on its contents!
 */ 
 
 #include <BLEDevice.h>

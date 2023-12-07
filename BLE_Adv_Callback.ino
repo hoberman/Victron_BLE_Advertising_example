@@ -109,7 +109,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
         float batteryVoltage=float(victronData->batteryVoltage)*0.01;
         float batteryCurrent=float(victronData->batteryCurrent)*0.1;
         float todayYield=float(victronData->todayYield)*0.01*1000;
-        float inputPower=float(victronData->inputPower)*0.01;
+        uint16_t inputPower=victronData->inputPower;  // this is in watts; no conversion needed
 
         // Getting the output current takes some magic because of the way they have the
         // 9-bit value packed into two bytes. The first byte has the low 8 bits of the count
@@ -132,7 +132,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
           return;
         }
 
-        Serial.printf("%-31s  Battery: %6.2f Volts %6.2f Amps  Solar: %6.2f Watts Yield: %6.0f Wh  Load: %6.1f Amps  State: %3d\n",
+        Serial.printf("%-31s  Battery: %6.2f Volts %6.2f Amps  Solar: %6d Watts Yield: %6.0f Wh  Load: %6.1f Amps  State: %3d\n",
           savedDeviceName,
           batteryVoltage, batteryCurrent,
           inputPower, todayYield,

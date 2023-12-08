@@ -6,6 +6,10 @@ void setup()
   Serial.println();
   Serial.println("Reset.");
   Serial.println();
+  Serial.printf("Source file: %s\n",__FILE__);
+  Serial.printf(" Build time: %s\n",__TIMESTAMP__);
+  Serial.println();
+  delay(1000);
 
   Serial.printf("Using encryption key: ");
   for (int i=0; i<16; i++) {

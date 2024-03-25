@@ -108,7 +108,7 @@ typedef struct {
    uint16_t todayYield;
    uint16_t inputPower;
    uint8_t outputCurrentLo;             // Low 8 bits of output current (in 0.1 Amp increments)
-   uint8_t outputCurrentHi;             // High 1 bit of ourput current (must mask off unused bits)
+   uint8_t outputCurrentHi;             // High 1 bit of output current (must mask off unused bits)
    uint8_t  unused[4];                  // Not currently used by Vistron, but it could be in the future.
 } __attribute__((packed)) victronPanelData;
 

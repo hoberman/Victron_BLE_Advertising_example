@@ -21,6 +21,24 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
         // buffer with an extra byte for a null terminator. Our toCharArray() call will need
         // to specify *32* bytes so it will copy 31 bytes of data with a null terminator
         // at the end.
+        //
+        // Having said all that, I need to backtrack a bit. We're NOT going to be using String.toCharArray()
+        // because it turns out that under some circumstances the manufacturer data may contain bytes
+        // with a value of zero (0x00). A zero byte causes String.toCharArray() (as well as String.getBytes())
+        // to terminate early and/or do other bizarre things that have the effect of corrupting the data.
+        //
+        // This was pointed out by surfermarty in Issue #6, and I verified the odd behavior by constructing a
+        // String with embeded zero-valued bytes and trying various ways of copying the data.
+        // As suggested by surfermarty, we can call String.c_str() to give us a pointer to the actual byte
+        // data buried in the String object and then use memcpy() to copy the data to our own buffer that we can
+        // access as intended.
+        //
+        // That being the case, we really don't need the +1 nonsense any more, other than it's there (for now)
+        // to accomodate users who might be still on an older version of the ESP32 library code. At some point
+        // I'll just remove the legacy compatibility and pare these comments down to just a discussion about using
+        // String.c_str()+memcpy() vs the more obvious-but-broken String.toCharArray().
+        //
+
         uint8_t manCharBuf[manDataSizeMax+1];
 
         #ifdef USE_String
@@ -29,13 +47,21 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
           std::string manData = advertisedDevice.getManufacturerData(); // lib code returns std::string
         #endif
         int manDataSize=manData.length(); // This does not count the null at the end.
+                                          // Note: I *think* this is the actual length of the data,
+                                          // and not the count up to the first zero byte. (Otherwise
+                                          // the following code wouldn't work right.)
 
-        // Copy the data from the String to a byte array. Must have the +1 so we
-        // don't lose the last character to the null terminator.
+        // Copy the data from the std::string or String object to a byte array.
         #ifdef USE_String
-          manData.toCharArray((char *)manCharBuf,manDataSize+1);
+          // String.toCharArray won't work. See above!
+          // manData.toCharArray((char *)manCharBuf,manDataSize+1);
+          memcpy(manCharBuf,manData.c_str(),manDataSize);
         #else
-          manData.copy((char *)manCharBuf, manDataSize+1);
+          // I had +1 here... but shouldn't have. There was no reason to copy() an extra byte,
+          // and I believe that could cause problems. I suppose someone still using the older ESP32 libraries
+          // will tell me if I'm wrong about this.
+          //manData.copy((char *)manCharBuf, manDataSize+1);
+          manData.copy((char *)manCharBuf, manDataSize);
         #endif
 
         // Now let's setup a pointer to a struct to get to the data more cleanly.
